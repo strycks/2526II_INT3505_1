@@ -10,7 +10,7 @@ try:
         print("Created")
         print("Server replied: " + response.text)
     else:
-        print("Error Code:" + response.status_code)
+        print("Error Code:" + str(response.status_code))
         
     response = requests.get(url)
     
@@ -18,7 +18,7 @@ try:
         print("Connected")
         print("Server replied: " + response.text)
     else:
-        print("Error Code:" + response.status_code)
+        print("Error Code:" + str(response.status_code))
         
 except requests.exceptions.ConnectionError:
     print("Failed to connect")
