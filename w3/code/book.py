@@ -1,9 +1,13 @@
 from datetime import datetime
 from flask import Flask, jsonify, request, make_response
 from flasgger import Swagger
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 
 app = Flask(__name__)
 swagger = Swagger(app)
+
+app.config["JWT_SECRET_KEY"] = "tXHzZyrglpWqIgfONgcI+gsoCnXKhFFRsFsLtfx0JqU=" 
+jwt = JWTManager(app)
 
 books_db = [
     {"id": 1, "title": "the art of war", "author": "sun tzu", "year": 450},
@@ -27,6 +31,19 @@ def wrap_with_metadata_error(error):
         },
         "error": error
     })
+    
+@app.route("/api/v1/auth/login", methods=["POST"])
+def login():
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
+    
+    if username != "admin" or password != "123456":
+        return wrap_with_metadata_error("invalid-credentials"), 401
+
+    access_token = create_access_token(identity=username)
+    return wrap_with_metadata(access_token), 200
+
+
 
 def find_book_by_id(book_id):
     return next((b for b in books_db if b['id'] == book_id), None)
@@ -38,6 +55,7 @@ def get_books():
     return response, 200
 
 @app.route('/api/v1/books/<int:book_id>', methods=['GET'])
+@jwt_required()
 def get_book(book_id):
     book = find_book_by_id(book_id)
     if not book:
