@@ -37,7 +37,7 @@ login_model = api.model('Login', {
 book_model = api.model('Book', {
     'id': fields.Integer(readOnly=True),
     'title': fields.String(required=True),
-    'author': fields.String(default="Unknown"),
+    'author': fields.String(default="valve, icefrog"),
     'year': fields.Integer(default=2026)
 })
 
@@ -88,10 +88,11 @@ class BookList(Resource):
     @jwt_required()
     @api.expect(book_model)
     @api.response(201, 'Created')
+    @api.response(400, 'Bad Request')
     def post(self):
         """Add new book"""
         data = request.json
-        if not data or 'title' not in data:
+        if not data or "title" not in data:
             return wrap_with_metadata_error("bad-request"), 400
         
         new_book = {
