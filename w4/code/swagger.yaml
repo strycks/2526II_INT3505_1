@@ -1,0 +1,108 @@
+swagger: "2.0"
+basePath: /
+paths:
+  /api/v1/auth/login:
+    post:
+      responses:
+        "200":
+          description: Success
+      summary: Login to get JWT Token
+      operationId: post_login
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: "#/definitions/Login"
+      security: []
+      tags:
+        - api/v1/auth
+  /api/v1/books:
+    post:
+      responses:
+        "201":
+          description: Created
+      summary: Add new book
+      operationId: post_book_list
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: "#/definitions/Book"
+      tags:
+        - api/v1/books
+    get:
+      responses:
+        "200":
+          description: Success
+      summary: Get all books
+      operationId: get_book_list
+      tags:
+        - api/v1/books
+  /api/v1/books/{book_id}:
+    parameters:
+      - name: book_id
+        in: path
+        required: true
+        type: integer
+    get:
+      responses:
+        "200":
+          description: Success
+      summary: Get a specific book
+      operationId: get_book_item
+      tags:
+        - api/v1/books
+info:
+  title: Book Management API
+  version: "1.0"
+produces:
+  - application/json
+consumes:
+  - application/json
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    in: header
+    name: Authorization
+security:
+  - bearerAuth: []
+tags:
+  - name: api/v1/auth
+    description: Authorization
+  - name: api/v1/books
+    description: Book Management
+definitions:
+  Login:
+    required:
+      - password
+      - username
+    properties:
+      username:
+        type: string
+        default: admin
+      password:
+        type: string
+        default: "123456"
+    type: object
+  Book:
+    required:
+      - title
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      author:
+        type: string
+        default: Unknown
+      year:
+        type: integer
+        default: 2026
+    type: object
+responses:
+  ParseError:
+    description: When a mask can't be parsed
+  MaskError:
+    description: When any error occurs on mask
