@@ -1,0 +1,24 @@
+FORMAT: 1A
+HOST: https://soa.strycks.dpdns.org
+
+# Book Management API
+
+## Group Books
+Resources related to book management.
+
+### Books Collection [/api/v1/books]
+
+#### Get all books [GET]
+Retrieve a list of all books in the library.
+
++ Response 200 (application/json)
+
+    + Attributes (array[Book])
+
+# Data Structures
+
+## Book (object)
++ id: 1 (number)
++ title: `Dota 2 Dragon Blood` (string, required)
++ author: `valve, icefrog` (string)
++ year: 2026 (number)
