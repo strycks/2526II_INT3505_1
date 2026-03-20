@@ -113,6 +113,18 @@ class BookItem(Resource):
         if not book:
             return wrap_with_metadata_error("book-not-found"), 404
         return wrap_with_metadata(book), 200
+    
+    @jwt_required()
+    @api.response(204, "Deleted")
+    def delete(self, book_id):
+        """Delete a specific book"""
+        global books_db
+        
+        book = next((b for b in books_db if b['id'] == book_id), None)
+        if not book:
+            return wrap_with_metadata_error("book-not-found"), 404
+        books_db = [b for b in books_db if b['id'] != book_id]
+        return wrap_with_metadata(""), 204
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

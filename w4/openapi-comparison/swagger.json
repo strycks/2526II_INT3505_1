@@ -28,8 +28,23 @@
       }
     },
     "/api/v1/books": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Get all books",
+        "operationId": "get_book_list",
+        "tags": [
+          "api/v1/books"
+        ]
+      },
       "post": {
         "responses": {
+          "400": {
+            "description": "Bad Request"
+          },
           "201": {
             "description": "Created"
           }
@@ -49,18 +64,6 @@
         "tags": [
           "api/v1/books"
         ]
-      },
-      "get": {
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        },
-        "summary": "Get all books",
-        "operationId": "get_book_list",
-        "tags": [
-          "api/v1/books"
-        ]
       }
     },
     "/api/v1/books/{book_id}": {
@@ -72,6 +75,18 @@
           "type": "integer"
         }
       ],
+      "delete": {
+        "responses": {
+          "204": {
+            "description": "Deleted"
+          }
+        },
+        "summary": "Delete a specific book",
+        "operationId": "delete_book_item",
+        "tags": [
+          "api/v1/books"
+        ]
+      },
       "get": {
         "responses": {
           "200": {
@@ -149,7 +164,7 @@
         },
         "author": {
           "type": "string",
-          "default": "Unknown"
+          "default": "valve, icefrog"
         },
         "year": {
           "type": "integer",
