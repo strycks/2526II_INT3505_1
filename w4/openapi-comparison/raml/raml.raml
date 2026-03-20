@@ -1,0 +1,39 @@
+#%RAML 1.0
+title: Book Management API
+version: v1
+baseUri: https://soa.strycks.dpdns.org/api/v1
+mediaType: application/json
+
+types:
+  Book:
+    type: object
+    properties:
+      id: integer
+      title: 
+        type: string
+        required: true
+        example: "Dota 2 Lore"
+      author:
+        type: string
+        default: "valve, icefrog"
+      year:
+        type: integer
+        default: 2026
+
+/books:
+  get:
+    description: Retrieve a list of all books
+    responses:
+      200:
+        body:
+          application/json:
+            type: Book[]
+            example: |
+              [
+                {
+                  "id": 1,
+                  "title": "Dota 2 Lore",
+                  "author": "valve, icefrog",
+                  "year": 2026
+                }
+              ]
