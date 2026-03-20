@@ -1,7 +1,4 @@
-## Option 1
+# So sánh OpenAPI với các format/công cụ có chức năng tương tự
 
-Paste the YAML or JSON file into https://editor.swagger.io/ to view the documentation.
-
-## Option 2
-
-View the interactive documentation in https://soa.strycks.dpdns.org/apidocs/
+## Guide
+- Xem từng thư mục tương ứng với từng format/công cụ để xem chi tiết ví dụ và hướng dẫn cài đặt.
