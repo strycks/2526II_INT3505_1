@@ -1,0 +1,155 @@
+openapi: 3.0.1
+info:
+  title: Book Management API
+  version: "1.0"
+servers:
+- url: /
+security:
+- bearerAuth: []
+tags:
+- description: Authorization
+  name: api/v1/auth
+- description: Book Management
+  name: api/v1/books
+paths:
+  /api/v1/auth/login:
+    post:
+      operationId: post_login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+        required: true
+      responses:
+        "200":
+          content: {}
+          description: Success
+      security: []
+      summary: Login to get JWT Token
+      tags:
+      - api/v1/auth
+      x-codegen-request-body-name: payload
+      x-openapi-router-controller: openapi_server.controllers.api_v1_auth_controller
+  /api/v1/books:
+    get:
+      operationId: get_book_list
+      responses:
+        "200":
+          content: {}
+          description: Success
+      summary: Get all books
+      tags:
+      - api/v1/books
+      x-openapi-router-controller: openapi_server.controllers.api_v1_books_controller
+    post:
+      operationId: post_book_list
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Book"
+        required: true
+      responses:
+        "201":
+          content: {}
+          description: Created
+        "400":
+          content: {}
+          description: Bad Request
+      summary: Add new book
+      tags:
+      - api/v1/books
+      x-codegen-request-body-name: payload
+      x-openapi-router-controller: openapi_server.controllers.api_v1_books_controller
+  /api/v1/books/{book_id}:
+    delete:
+      operationId: delete_book_item
+      parameters:
+      - in: path
+        name: book_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        "204":
+          content: {}
+          description: Deleted
+      summary: Delete a specific book
+      tags:
+      - api/v1/books
+      x-openapi-router-controller: openapi_server.controllers.api_v1_books_controller
+    get:
+      operationId: get_book_item
+      parameters:
+      - in: path
+        name: book_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        "200":
+          content: {}
+          description: Success
+      summary: Get a specific book
+      tags:
+      - api/v1/books
+      x-openapi-router-controller: openapi_server.controllers.api_v1_books_controller
+components:
+  responses:
+    ParseError:
+      content: {}
+      description: When a mask can't be parsed
+    MaskError:
+      content: {}
+      description: When any error occurs on mask
+  schemas:
+    Login:
+      example:
+        password: "123456"
+        username: admin
+      properties:
+        username:
+          default: admin
+          title: username
+          type: string
+        password:
+          default: "123456"
+          title: password
+          type: string
+      required:
+      - password
+      - username
+      title: Login
+      type: object
+    Book:
+      example:
+        year: 6
+        author: "valve, icefrog"
+        id: 0
+        title: title
+      properties:
+        id:
+          title: id
+          type: integer
+        title:
+          title: title
+          type: string
+        author:
+          default: "valve, icefrog"
+          title: author
+          type: string
+        year:
+          title: year
+          type: integer
+      required:
+      - title
+      title: Book
+      type: object
+  securitySchemes:
+    bearerAuth:
+      in: header
+      name: Authorization
+      type: apiKey
+      x-apikeyInfoFunc: openapi_server.controllers.security_controller.info_from_bearerAuth
+x-original-swagger-version: "2.0"
