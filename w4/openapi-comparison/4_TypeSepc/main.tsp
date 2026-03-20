@@ -13,7 +13,7 @@ model Book {
   id: int32;
   
   @minLength(1)
-  title: string;
+  title: string = "Dota's Dragon Blood";
   
   author: string = "valve, icefrog";
   year: int32 = 2026;
