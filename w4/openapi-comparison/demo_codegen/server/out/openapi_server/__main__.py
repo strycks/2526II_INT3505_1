@@ -6,9 +6,9 @@ from openapi_server import encoder
 
 
 def main():
-    app = connexion.App(__name__)
+    app = connexion.App(__name__, specification_dir='./openapi/')
     app.app.json_encoder = encoder.JSONEncoder
-    app.add_api('openapi/openapi.yaml',
+    app.add_api('openapi.yaml',
                 arguments={'title': 'Book Management API'},
                 pythonic_params=True)
 

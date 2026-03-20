@@ -6,11 +6,4 @@ npm install @openapitools/openapi-generator-cli -g
 ```
 openapi-generator-cli generate -i demo.yaml -g python-flask -o ./out/python-server
 ```
-3. Run `setup.py` in `/out/python-server` directory to install all dependencies
-```
-python setup.py install
-```
-4. Start the server
-```
-python -m openapi_server
-```
+3. Refer to the README.md file in `/out/` for further steps.
