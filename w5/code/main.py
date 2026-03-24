@@ -72,14 +72,22 @@ borrow_request_model = api.model('BorrowRequest', {
     'book_id': fields.Integer(required=True)
 })
 
-def wrap_with_metadata(data):
-    return {
+pagination_parser = api.parser()
+pagination_parser.add_argument('page', type=int, default=1, help='Page number')
+pagination_parser.add_argument('per_page', type=int, default=10, help='Item per page')
+pagination_parser.add_argument('q', type=str, help='Search query')
+
+def wrap_with_metadata(data, pagination = None):
+    response = {
         "metadata": {
             "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
         "data": data
     }
+    if pagination:
+       response["metadata"]["pagination"] = pagination 
+    return response
 
 def wrap_with_metadata_error(error):
     return {
@@ -113,9 +121,39 @@ class Login(Resource):
 @ns_books.route('')
 class BookList(Resource):
     @jwt_required()
+    @api.expect(pagination_parser)
     def get(self):
         """Get all books"""
-        return wrap_with_metadata(books_db), 200
+        args = pagination_parser.parse_args()
+        page = args['page']
+        per_page = args['per_page']
+        query = args.get('q')
+
+        filtered_books = [b for b in books_db if query in b['title'].lower()] if query else books_db
+        total_elements = len(filtered_books)
+
+        # page = ceil(ele / per)
+        total_pages = (total_elements + per_page - 1) // per_page if total_elements > 0 else 0
+        
+        if page > total_pages and total_pages > 0:
+            page = total_pages
+        
+        start = (page - 1) * per_page
+        end = min(start + per_page, total_elements)
+        items = filtered_books[start:end]
+
+        pagination = {
+            "type": "page-based",
+            "current_page": page,
+            "per_page": per_page,
+            "total_elements": total_elements,
+            "total_pages": total_pages,
+            "links": {
+                "next": f"?page={page+1}&per_page={per_page}" + (f"&q={query}" if query != "" else "") if page < total_pages else None,
+                "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != "" else "") if page > 1 else None
+            }
+        }
+        return wrap_with_metadata(items, pagination), 200
 
     @jwt_required()
     @api.expect(book_request_model)
@@ -198,8 +236,11 @@ class UserBorrows(Resource):
         book_id = data.get('book_id')
         
         book = next((b for b in books_db if b['id'] == book_id), None)
+        user = next((u for u in users_db if u['id'] == user_id), None)
         if not book:
             return wrap_with_metadata_error("book-not-found"), 404
+        if not user:
+            return wrap_with_metadata_error("user-not-found"), 404
         
         new_borrow = {
             "user_id": user_id,
