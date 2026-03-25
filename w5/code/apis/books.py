@@ -1,0 +1,98 @@
+from flask import request
+from flask_jwt_extended import jwt_required
+from flask_restx import Api, Resource, fields, Namespace
+from database import books_db
+from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser
+
+ns_books = Namespace('api/v1/books', description='Book Management')
+
+book_model = ns_books.model('Book', {
+    'id': fields.Integer(readOnly=True),
+    'title': fields.String(required=True),
+    'author': fields.String(default="valve, icefrog"),
+    'year': fields.Integer(default=2026)
+})
+
+book_request_model = ns_books.model('BookRequest', {
+    'title': fields.String(required=True),
+    'author': fields.String(default="valve, icefrog"),
+    'year': fields.Integer(default=2026)
+})
+
+@ns_books.route('')
+class BookList(Resource):
+    @jwt_required()
+    @ns_books.expect(pagination_parser)
+    def get(self):
+        """Get all books"""
+        args = pagination_parser.parse_args()
+        page = args['page']
+        per_page = args['per_page']
+        query = args.get('q')
+
+        filtered_books = [b for b in books_db if query in b['title'].lower()] if query else books_db
+        total_elements = len(filtered_books)
+
+        # page = ceil(ele / per)
+        total_pages = (total_elements + per_page - 1) // per_page if total_elements > 0 else 0
+        
+        if page > total_pages and total_pages > 0:
+            page = total_pages
+        
+        start = (page - 1) * per_page
+        end = min(start + per_page, total_elements)
+        items = filtered_books[start:end]
+
+        pagination = {
+            "type": "page-based",
+            "current_page": page,
+            "per_page": per_page,
+            "total_elements": total_elements,
+            "total_pages": total_pages,
+            "links": {
+                "next": f"?page={page+1}&per_page={per_page}" + (f"&q={query}" if query != "" else "") if page < total_pages else None,
+                "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != "" else "") if page > 1 else None
+            }
+        }
+        return wrap_with_metadata(items, pagination), 200
+
+    @jwt_required()
+    @ns_books.expect(book_request_model)
+    @ns_books.response(201, 'Created')
+    @ns_books.response(400, 'Bad Request')
+    def post(self):
+        """Add new book"""
+        data = request.json
+        if not data or "title" not in data:
+            return wrap_with_metadata_error("bad-request"), 400
+        
+        new_book = {
+            "id": books_db[-1]['id'] + 1 if books_db else 1,
+            "title": data['title'],
+            "author": data.get('author', "Unknown"),
+            "year": data.get('year', 2026)
+        }
+        books_db.append(new_book)
+        return wrap_with_metadata(new_book), 201
+
+@ns_books.route('/<int:book_id>')
+class BookItem(Resource):
+    @jwt_required()
+    def get(self, book_id):
+        """Get a specific book"""
+        book = next((b for b in books_db if b['id'] == book_id), None)
+        if not book:
+            return wrap_with_metadata_error("book-not-found"), 404
+        return wrap_with_metadata(book), 200
+    
+    @jwt_required()
+    @ns_books.response(204, "Deleted")
+    def delete(self, book_id):
+        """Delete a specific book"""
+        global books_db
+        
+        book = next((b for b in books_db if b['id'] == book_id), None)
+        if not book:
+            return wrap_with_metadata_error("book-not-found"), 404
+        books_db = [b for b in books_db if b['id'] != book_id]
+        return wrap_with_metadata(""), 204
