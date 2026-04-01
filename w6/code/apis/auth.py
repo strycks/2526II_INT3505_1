@@ -28,8 +28,15 @@ class Login(Resource):
         if not check_password_hash(obj["password"], password):
             return wrap_with_metadata_error("invalid-credentials"), 401
 
-        access_token = create_access_token(identity=username, additional_claims={"role":obj["role"]}, expires_delta=timedelta(minutes=15))
-        refresh_token = create_refresh_token(identity=username, expires_delta=timedelta(days=30))
+        access_token = create_access_token(
+            identity=username, 
+            additional_claims={"role":obj["role"]}, 
+            expires_delta=timedelta(minutes=15)
+        )
+        refresh_token = create_refresh_token(
+            identity=username, 
+            expires_delta=timedelta(days=30)
+        )
         return wrap_with_metadata({
                 "access-token": access_token,
                 "refresh_token": refresh_token
@@ -43,8 +50,11 @@ class Refresh(Resource):
         identity = get_jwt_identity()
         user = next((u for u in auths_db if u["username"] == identity), None)
         if not user:
-            return wrap_with_metadata_error("refresh-token-not-valid"), 400
-        access_token = create_access_token(identity=identity, additional_claims={"role": user['role']})
+            return wrap_with_metadata_error("invalid-refresh-token"), 401
+        access_token = create_access_token(
+            identity=identity, 
+            additional_claims={"role": user['role']}
+        )
         return wrap_with_metadata({
             "access_token": access_token
         }), 201
