@@ -2,7 +2,7 @@ from flask import request
 from flask_jwt_extended import jwt_required
 from flask_restx import Api, Resource, fields, Namespace
 from database import books_db
-from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser
+from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required
 
 ns_books = Namespace('api/v1/books', description='Book Management')
 
@@ -50,12 +50,13 @@ class BookList(Resource):
             "total_elements": total_elements,
             "total_pages": total_pages,
             "links": {
-                "next": f"?page={page+1}&per_page={per_page}" + (f"&q={query}" if query != "" else "") if page < total_pages else None,
-                "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != "" else "") if page > 1 else None
+                "next": f"?page={page+1}&per_page={per_page}" + (f"&q={query}" if query != None else "") if page < total_pages else None,
+                "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != None else "") if page > 1 else None
             }
         }
         return wrap_with_metadata(items, pagination), 200
 
+    @role_required("admin")
     @jwt_required()
     @ns_books.expect(book_request_model)
     @ns_books.response(201, 'Created')
