@@ -12,28 +12,65 @@ types:
       title: 
         type: string
         required: true
-        example: "Dota Dragon's Blood"
-      author:
-        type: string
-        default: "valve, icefrog"
-      year:
-        type: integer
-        default: 2026
+      author: string
+      year: integer
 
 /books:
   get:
-    description: Retrieve a list of all books
+    description: Get all books
     responses:
       200:
         body:
           application/json:
             type: Book[]
-            example: |
-              [
-                {
-                  "id": 1,
-                  "title": "Dota 2 Lore",
-                  "author": "valve, icefrog",
-                  "year": 2026
-                }
-              ]
+
+  post:
+    description: Create a new book
+    body:
+      application/json:
+        type: Book
+    responses:
+      201:
+        body:
+          application/json:
+            type: Book
+
+  /{id}:
+    get:
+      description: Get book details
+      responses:
+        200:
+          body:
+            application/json:
+              type: Book
+    
+    put:
+      description: Replace a book
+      body:
+        application/json:
+          type: Book
+      responses:
+        200:
+          body:
+            application/json:
+              type: Book
+
+    patch:
+      description: Update book fields
+      body:
+        application/json:
+          type: object
+          properties:
+            title?: string
+            author?: string
+            year?: integer
+      responses:
+        200:
+          body:
+            application/json:
+              type: Book
+
+    delete:
+      description: Remove a book
+      responses:
+        204:

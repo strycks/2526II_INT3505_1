@@ -3,22 +3,56 @@ HOST: https://soa.strycks.dpdns.org
 
 # Book Management API
 
-## Group Books
-Resources related to book management.
+Simple API to manage library books.
 
-### Books Collection [/api/v1/books]
+# Group Books
 
-#### Get all books [GET]
-Retrieve a list of all books in the library.
+## Books Collection [/api/v1/books]
+
+### List All Books [GET]
++ Response 200 (application/json)
+    + Attributes (array[Book])
+
+### Create Book [POST]
++ Request (application/json)
+    + Attributes (BookBase)
+
++ Response 201 (application/json)
+    + Attributes (Book)
+
+## Book Details [/api/v1/books/{id}]
+
++ Parameters
+    + id: 1 (number, required) - Book ID
+
+### Get Book [GET]
++ Response 200 (application/json)
+    + Attributes (Book)
+
+### Replace Book [PUT]
++ Request (application/json)
+    + Attributes (BookBase)
 
 + Response 200 (application/json)
+    + Attributes (Book)
 
-    + Attributes (array[Book])
+### Partial Update [PATCH]
++ Request (application/json)
+    + Attributes
+        + year: 2027 (number, optional)
+
++ Response 200 (application/json)
+    + Attributes (Book)
+
+### Delete Book [DELETE]
++ Response 204
 
 # Data Structures
 
-## Book (object)
-+ id: 1 (number)
+## BookBase (object)
 + title: `Dota Dragon's Blood` (string, required)
 + author: `valve, icefrog` (string)
 + year: 2026 (number)
+
+## Book (BookBase)
++ id: 1 (number)
