@@ -1,0 +1,172 @@
+openapi: 3.0.0
+info:
+  title: Book Management API
+  version: v1
+servers:
+- url: https://soa.strycks.dpdns.org/api/v1
+paths:
+  /books:
+    get:
+      description: Get all books
+      operationId: g_et_books
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Book"
+                type: array
+          description: ""
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    post:
+      description: Create a new book
+      operationId: p_ost_books
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Book"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: ""
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /books/{id}:
+    delete:
+      description: Remove a book
+      operationId: d_elete_books_id
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: ""
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    get:
+      description: Get book details
+      operationId: g_et_books_id
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: ""
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    patch:
+      description: Update book fields
+      operationId: p_atch_books_id
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PATCH_books_id_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: ""
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    put:
+      description: Replace a book
+      operationId: p_ut_books_id
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Book"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: ""
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+components:
+  callbacks: {}
+  examples: {}
+  headers: {}
+  links: {}
+  parameters: {}
+  requestBodies: {}
+  responses: {}
+  schemas:
+    Book:
+      example:
+        year: 6
+        author: author
+        id: 0
+        title: title
+      properties:
+        id:
+          title: id
+          type: integer
+        title:
+          title: title
+          type: string
+        author:
+          title: author
+          type: string
+        year:
+          title: year
+          type: integer
+      required:
+      - author
+      - id
+      - title
+      - year
+      title: Book
+      type: object
+    PATCH_books_id_request:
+      properties:
+        title:
+          title: title
+          type: string
+        author:
+          title: author
+          type: string
+        year:
+          title: year
+          type: integer
+      title: PATCH_books_id_request
+      type: object
+  securitySchemes: {}
