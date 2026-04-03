@@ -1,0 +1,219 @@
+openapi: 3.0.0
+info:
+  title: Book Management API
+  version: ""
+  description: Simple API to manage library books.
+paths:
+  /api/v1/books:
+    get:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+              examples:
+                response:
+                  value:
+                    - title: Dota Dragon's Blood
+                      author: valve, icefrog
+                      year: 2026
+                      id: 1
+      summary: List All Books
+      operationId: List All Books
+      description: ""
+      tags:
+        - Books
+    post:
+      responses:
+        "201":
+          description: Created
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+              examples:
+                response:
+                  value:
+                    title: Dota Dragon's Blood
+                    author: valve, icefrog
+                    year: 2026
+                    id: 1
+      summary: Create Book
+      operationId: Create Book
+      description: ""
+      tags:
+        - Books
+      requestBody:
+        $ref: "#/components/requestBodies/Create_BookBody"
+  "/api/v1/books/{id}":
+    get:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+              examples:
+                response:
+                  value:
+                    title: Dota Dragon's Blood
+                    author: valve, icefrog
+                    year: 2026
+                    id: 1
+      summary: Get Book
+      operationId: Get Book
+      description: ""
+      tags:
+        - Books
+      parameters:
+        - name: id
+          in: path
+          description: Book ID
+          required: true
+          example: "1"
+          schema:
+            type: number
+    put:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+              examples:
+                response:
+                  value:
+                    title: Dota Dragon's Blood
+                    author: valve, icefrog
+                    year: 2026
+                    id: 1
+      summary: Replace Book
+      operationId: Replace Book
+      description: ""
+      tags:
+        - Books
+      parameters:
+        - name: id
+          in: path
+          description: Book ID
+          required: true
+          example: "1"
+          schema:
+            type: number
+      requestBody:
+        $ref: "#/components/requestBodies/Create_BookBody"
+    patch:
+      responses:
+        "200":
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+              examples:
+                response:
+                  value:
+                    title: Dota Dragon's Blood
+                    author: valve, icefrog
+                    year: 2026
+                    id: 1
+      summary: Partial Update
+      operationId: Partial Update
+      description: ""
+      tags:
+        - Books
+      parameters:
+        - name: id
+          in: path
+          description: Book ID
+          required: true
+          example: "1"
+          schema:
+            type: number
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                year:
+                  type: number
+              example:
+                year: 2027
+    delete:
+      responses:
+        "204":
+          description: No Content
+          headers: {}
+      summary: Delete Book
+      operationId: Delete Book
+      description: ""
+      tags:
+        - Books
+      parameters:
+        - name: id
+          in: path
+          description: Book ID
+          required: true
+          example: "1"
+          schema:
+            type: number
+tags:
+  - name: Books
+servers:
+  - url: https://soa.strycks.dpdns.org
+components:
+  requestBodies:
+    Create_BookBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              author:
+                type: string
+              year:
+                type: number
+            required:
+              - title
+            example:
+              title: Dota Dragon's Blood
+              author: valve, icefrog
+              year: 2026
+  schemas:
+    BookBase:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: Dota Dragon's Blood
+        author:
+          type: string
+          example: valve, icefrog
+        year:
+          type: number
+          example: 2026
+    Book:
+      allOf:
+        - $ref: "#/components/schemas/BookBase"
+        - type: object
+          properties:
+            id:
+              type: number
+              example: 1
+    Books_Collection: {}
+    Book_Details: {}
