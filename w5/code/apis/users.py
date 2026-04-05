@@ -1,8 +1,9 @@
 from datetime import datetime
+import time
 from flask import request
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, fields, Resource
-from utils import wrap_with_metadata, wrap_with_metadata_error
+from utils import wrap_with_metadata, wrap_with_metadata_error, cursor_pagination_parser
 from database import users_db, borrows_db, books_db
 
 ns_users = Namespace('api/v1/users', description='User Management')
@@ -25,9 +26,43 @@ borrow_request_model = ns_users.model('BorrowRequest', {
 @ns_users.route('')
 class UserList(Resource):
     @jwt_required()
+    @ns_users.expect(cursor_pagination_parser)
     def get(self):
         """Get all users"""
-        return wrap_with_metadata(users_db), 200
+        start_timer = time.perf_counter()
+        
+        args = cursor_pagination_parser.parse_args()
+        after_id = args['after']
+        limit = args['limit']
+        
+        # Database index is saved as tree, traversing it takes O(logn). 
+        # Here I use binary search which is also O(logn) to better demonstrate (shorter code, easier to follow).
+        l = -1
+        r = len(users_db)
+        while r - l > 1:
+            database_delay()
+            mid = (l + r) // 2
+            if users_db[mid]['id'] >= after_id:
+                r = mid
+            else:
+                l = mid
+            
+        start_idx = r
+        if start_idx == len(users_db): 
+            return wrap_with_metadata([]), 200
+        
+        items = users_db[start_idx : start_idx + limit]
+        pagination = {
+            "type": "cursor-based",
+            "links": {
+                "cur": f"?after={after_id}&limit={limit}",
+                "next": f"?after={items[-1]['id'] + 1}&limit={limit}" if start_idx + limit < len(users_db) else None
+            }
+        }
+        
+        end_timer = time.perf_counter()
+        print(f"Elapsed time: {(end_timer - start_timer):.6f} seconds")
+        return wrap_with_metadata(items, pagination), 200
     
 @ns_users.route('/<int:user_id>')
 class UserEntry(Resource):
@@ -75,3 +110,8 @@ class UserBorrows(Resource):
         }
         borrows_db.append(new_borrow)
         return wrap_with_metadata(new_borrow), 201
+    
+def database_delay():
+    # random math
+    for i in range(500):
+        x = 0

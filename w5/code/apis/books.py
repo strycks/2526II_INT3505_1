@@ -2,7 +2,8 @@ from flask import request
 from flask_jwt_extended import jwt_required
 from flask_restx import Api, Resource, fields, Namespace
 from database import books_db
-from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser
+from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required
+import time
 
 ns_books = Namespace('api/v1/books', description='Book Management')
 
@@ -25,6 +26,8 @@ class BookList(Resource):
     @ns_books.expect(pagination_parser)
     def get(self):
         """Get all books"""
+        start_timer = time.perf_counter()
+        
         args = pagination_parser.parse_args()
         page = args['page']
         per_page = args['per_page']
@@ -39,9 +42,15 @@ class BookList(Resource):
         if page > total_pages and total_pages > 0:
             page = total_pages
         
-        start = (page - 1) * per_page
-        end = min(start + per_page, total_elements)
-        items = filtered_books[start:end]
+        offset = (page - 1) * per_page
+        limit = offset + per_page
+        
+        # full table scan simulation
+        cnt = 0
+        while cnt < offset:
+            cnt += 1
+            database_delay()
+        items = books_db[cnt : cnt + limit]
 
         pagination = {
             "type": "page-based",
@@ -50,12 +59,16 @@ class BookList(Resource):
             "total_elements": total_elements,
             "total_pages": total_pages,
             "links": {
-                "next": f"?page={page+1}&per_page={per_page}" + (f"&q={query}" if query != "" else "") if page < total_pages else None,
-                "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != "" else "") if page > 1 else None
+                "next": f"?page={page+1}&per_page={per_page}" + (f"&q={query}" if query != None else "") if page < total_pages else None,
+                "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != None else "") if page > 1 else None
             }
         }
+        
+        end_timer = time.perf_counter()
+        print(f"Elapsed time: {(end_timer - start_timer):.6f} seconds")
         return wrap_with_metadata(items, pagination), 200
 
+    @role_required("admin")
     @jwt_required()
     @ns_books.expect(book_request_model)
     @ns_books.response(201, 'Created')
@@ -96,3 +109,8 @@ class BookItem(Resource):
             return wrap_with_metadata_error("book-not-found"), 404
         books_db = [b for b in books_db if b['id'] != book_id]
         return wrap_with_metadata(""), 204
+    
+def database_delay():
+    # random math
+    for i in range(500):
+        x = 0

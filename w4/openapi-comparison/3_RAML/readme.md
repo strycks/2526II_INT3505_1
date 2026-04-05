@@ -3,5 +3,4 @@
 3. Open `index.html` to view documentation.
 4. Install oas-raml-converter `npm i -g oas-raml-converter`
 5. Convert to OpenAPI Spec `oas-raml-converter --from RAML --to OAS30 raml.raml > swagger.json`
-6. Install openapi-generator-cli `npm install @openapitools/openapi-generator-cli -g`
-7. Generate server code `openapi-generator-cli generate -i swagger.json -g python-flask -o ./out/python-server`
+6. Generate server code `openapi-generator-cli generate -i swagger.json -g python-flask -o ./out/python-server`
