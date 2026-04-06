@@ -1,12 +1,17 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
+from mongoengine import connect
 from apis import api
 from database import init_db
+import os
+from dotenv import load_dotenv
 
-init_db()
+load_dotenv()
 app = Flask(__name__)
-app.config["JWT_SECRET_KEY"] = "tXHzZyrglpWqIgfONgcI+gsoCnXKhFFRsFsLtfx0JqU=" 
+app.config["JWT_SECRET_KEY"] = "tXHzZyrglpWqIgfONgcI+gsoCnXKhFFRsFsLtfx0JqU="
 jwt = JWTManager(app)
+connect(host=os.getenv("MONGODB_URI"))
+init_db()
 api.init_app(app)
 
 if __name__ == "__main__":

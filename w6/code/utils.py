@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask_restx import reqparse
+from flask_restx import marshal, reqparse
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from functools import wraps
 import base64
@@ -24,6 +24,19 @@ def wrap_with_metadata_error(error):
         },
         "error": error
     }
+
+def wrap_with_metadata_v2(data, model = None, pagination = None):
+    new_data = marshal(data, model) if model else data
+    response = {
+        "metadata": {
+            "apiVersion": "1.0",
+            "timestamp": datetime.now().isoformat()
+        },
+        "data": new_data
+    }
+    if pagination:
+       response["metadata"]["pagination"] = pagination 
+    return response
 
 def role_required(roles):
     if isinstance(roles, str):

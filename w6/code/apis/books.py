@@ -1,13 +1,14 @@
 from flask import request
 from flask_jwt_extended import jwt_required
-from flask_restx import Api, Resource, fields, Namespace
+from flask_restx import Api, Resource, fields, Namespace, marshal
 from database import books_db
-from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required
+from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required, wrap_with_metadata_v2
+from models import Book
 
 ns_books = Namespace('api/v1/books', description='Book Management')
 
 book_model = ns_books.model('Book', {
-    'id': fields.Integer(readOnly=True),
+    'id': fields.String(attribute='id'),
     'title': fields.String(required=True),
     'author': fields.String(default="valve, icefrog"),
     'year': fields.Integer(default=2026)
@@ -29,13 +30,12 @@ class BookList(Resource):
         page = args['page']
         per_page = args['per_page']
         query = args.get('q')
-
-        filtered_books = [b for b in books_db if query in b['title'].lower()] if query else books_db
+        
+        filtered_books = Book.objects.all() if not query else Book.objects(title__icontains=query)
         total_elements = len(filtered_books)
 
         # page = ceil(ele / per)
         total_pages = (total_elements + per_page - 1) // per_page if total_elements > 0 else 0
-        
         if page > total_pages and total_pages > 0:
             page = total_pages
         
@@ -54,7 +54,7 @@ class BookList(Resource):
                 "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != None else "") if page > 1 else None
             }
         }
-        return wrap_with_metadata(items, pagination), 200
+        return wrap_with_metadata_v2(list(items), book_model, pagination)
 
     @role_required("admin")
     @jwt_required()
