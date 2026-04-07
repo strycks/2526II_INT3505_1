@@ -1,5 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import Book
+from models import Book, User, Borrowing
 
 books_db = [
     {"id": 1, "title": "the art of war", "author": "sun tzu", "year": 450},
@@ -21,6 +21,11 @@ borrows_db = [
 auths_db = []
 
 def init_db():
+    # book = Book.objects.first()
+    # user = Book.objects.first()
+    # borrowing = Borrowing(user=user.id, book=book.id)
+    # borrowing.save()
+    
     auths_db.append({
         "id": 1,
         "username": "admin",
