@@ -22,7 +22,7 @@ def wrap_with_metadata_error(error):
             "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
-        "error": error
+        "message": error
     }
 
 def wrap_with_metadata_v2(data, model = None, pagination = None):

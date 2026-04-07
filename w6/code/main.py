@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
-from mongoengine import connect
+from mongoengine import connect, disconnect
 from apis import api
 from database import init_db
 import os

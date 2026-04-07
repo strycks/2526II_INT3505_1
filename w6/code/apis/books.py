@@ -75,15 +75,15 @@ class BookItem(Resource):
     @jwt_required()
     def get(self, book_id):
         """Get a specific book"""
-        book = Book.objects(id = book_id)
+        book = Book.objects.get(id=book_id)
         
-        return wrap_with_metadata_v2(book[0], book_model), 200
+        return wrap_with_metadata_v2(book, book_model), 200
     
     @jwt_required()
     @ns_books.response(204, "Deleted")
     def delete(self, book_id):
         """Delete a specific book"""
-        book = Book.objects(id = book_id)
-        book[0].delete()
+        book = Book.objects.get(id=book_id)
+        book.delete()
         
         return wrap_with_metadata(""), 204
