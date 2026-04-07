@@ -8,7 +8,7 @@ from models import Book
 ns_books = Namespace('api/v1/books', description='Book Management')
 
 book_model = ns_books.model('Book', {
-    'id': fields.String(attribute='id'),
+    'id': fields.String(required=True),
     'title': fields.String(required=True),
     'author': fields.String(default="valve, icefrog"),
     'year': fields.Integer(default=2026)
@@ -23,7 +23,7 @@ book_request_model = ns_books.model('BookRequest', {
 @ns_books.route('')
 class BookList(Resource):
     @jwt_required()
-    @ns_books.expect(pagination_parser)
+    @ns_books.expect(pagination_parser, validate=True)
     def get(self):
         """Get all books"""
         args = pagination_parser.parse_args()
@@ -58,42 +58,32 @@ class BookList(Resource):
 
     @role_required("admin")
     @jwt_required()
-    @ns_books.expect(book_request_model)
+    @ns_books.expect(book_request_model, validate=True)
     @ns_books.response(201, 'Created')
     @ns_books.response(400, 'Bad Request')
     def post(self):
         """Add new book"""
         data = request.json
-        if not data or "title" not in data:
-            return wrap_with_metadata_error("bad-request"), 400
         
-        new_book = {
-            "id": books_db[-1]['id'] + 1 if books_db else 1,
-            "title": data['title'],
-            "author": data.get('author', "Unknown"),
-            "year": data.get('year', 2026)
-        }
-        books_db.append(new_book)
-        return wrap_with_metadata(new_book), 201
+        new_book = Book(title = data['title'], author = data.get('author', "Unknown"), year = data.get('year', 2026))
+        new_book.save()
+        
+        return wrap_with_metadata_v2(new_book, book_model), 201
 
-@ns_books.route('/<int:book_id>')
+@ns_books.route('/<string:book_id>')
 class BookItem(Resource):
     @jwt_required()
     def get(self, book_id):
         """Get a specific book"""
-        book = next((b for b in books_db if b['id'] == book_id), None)
-        if not book:
-            return wrap_with_metadata_error("book-not-found"), 404
-        return wrap_with_metadata(book), 200
+        book = Book.objects(id = book_id)
+        
+        return wrap_with_metadata_v2(book[0], book_model), 200
     
     @jwt_required()
     @ns_books.response(204, "Deleted")
     def delete(self, book_id):
         """Delete a specific book"""
-        global books_db
+        book = Book.objects(id = book_id)
+        book[0].delete()
         
-        book = next((b for b in books_db if b['id'] == book_id), None)
-        if not book:
-            return wrap_with_metadata_error("book-not-found"), 404
-        books_db = [b for b in books_db if b['id'] != book_id]
         return wrap_with_metadata(""), 204
