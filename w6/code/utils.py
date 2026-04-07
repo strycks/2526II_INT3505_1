@@ -62,5 +62,5 @@ pagination_parser.add_argument('per_page', type=int, default=10, help='Item per 
 pagination_parser.add_argument('q', type=str, help='Search query')
 
 cursor_pagination_parser = reqparse.RequestParser()
-cursor_pagination_parser.add_argument('after', type=int, default=1, help='After index')
+cursor_pagination_parser.add_argument('after', type=str, help='After index')
 cursor_pagination_parser.add_argument('limit', type=int, default=10, help='Item limit')
