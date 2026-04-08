@@ -1,5 +1,9 @@
 from werkzeug.security import generate_password_hash, check_password_hash
+<<<<<<< HEAD
 from models import Book, User, Borrowing
+=======
+from models import Book, User
+>>>>>>> b3debb05987147f8ccaf8d884e04105f1827165a
 
 books_db = [
     {"id": 1, "title": "the art of war", "author": "sun tzu", "year": 450},
