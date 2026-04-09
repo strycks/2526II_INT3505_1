@@ -1,7 +1,6 @@
 from flask import request
 from flask_jwt_extended import jwt_required
-from flask_restx import Api, Resource, fields, Namespace, marshal
-from database import books_db
+from flask_restx import Resource, fields, Namespace
 from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required, wrap_with_metadata_v2
 from models import Book
 

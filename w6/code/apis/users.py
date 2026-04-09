@@ -1,10 +1,8 @@
-from datetime import datetime
 from flask import request
 from flask_jwt_extended import jwt_required
 from flask_restx import Namespace, fields, Resource
-from utils import wrap_with_metadata, wrap_with_metadata_error, cursor_pagination_parser, wrap_with_metadata_v2
-from database import users_db, borrows_db, books_db
-from models import User, Book, Borrowing
+from utils import cursor_pagination_parser, wrap_with_metadata_v2, role_required
+from models import User, Book, Borrowing, AuthAccount
 from apis.books import book_model
 
 ns_users = Namespace('api/v1/users', description='User Management')

@@ -2,7 +2,6 @@ from datetime import datetime
 from flask_restx import marshal, reqparse
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from functools import wraps
-import base64
 
 def wrap_with_metadata(data, pagination = None):
     response = {
@@ -50,7 +49,7 @@ def role_required(roles):
             if claims["role"] in roles:
                 return fn(*args, **kwargs)
             else:
-                return wrap_with_metadata_error("forbidden"), 403
+                return wrap_with_metadata_error("Forbidden"), 403
 
         return decorator
 

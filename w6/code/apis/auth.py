@@ -1,16 +1,25 @@
 from flask import request
 from flask_restx import Namespace, fields, Resource
-from utils import wrap_with_metadata, wrap_with_metadata_error
+from utils import wrap_with_metadata, wrap_with_metadata_error, wrap_with_metadata_v2
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import auths_db
 from datetime import timedelta
+from models import AuthAccount, User
+from apis.users import user_model
 
 ns_auth = Namespace('api/v1/auth', description='Authorization')
 
 login_model = ns_auth.model('Login', {
     'username': fields.String(required=True, default='admin'),
     'password': fields.String(required=True, default='123456')
+})
+
+register_model = ns_auth.model('Register', {
+    'username': fields.String(required=True),
+    'password': fields.String(required=True),
+    'name': fields.String(required=True),
+    'roles': fields.List(fields.String())
 })
 
 @ns_auth.route('/login')
@@ -22,15 +31,15 @@ class Login(Resource):
         data = request.json
         username = data.get("username")
         password = data.get("password")
+    
+        usr = AuthAccount.objects.get(username=username)
         
-        obj = next((u for u in auths_db if u['username'] == username), None)
-        
-        if not check_password_hash(obj["password"], password):
-            return wrap_with_metadata_error("invalid-credentials"), 401
+        if not check_password_hash(usr.password, password):
+            return wrap_with_metadata_error("Invalid credentials"), 401
 
         access_token = create_access_token(
             identity=username, 
-            additional_claims={"role":obj["role"]}, 
+            additional_claims={"role":usr.roles}, 
             expires_delta=timedelta(minutes=15)
         )
         refresh_token = create_refresh_token(
@@ -48,14 +57,38 @@ class Refresh(Resource):
     def post(self):
         """Refresh token"""
         identity = get_jwt_identity()
-        user = next((u for u in auths_db if u["username"] == identity), None)
+        user = AuthAccount.objects(username=identity).first()
         if not user:
-            return wrap_with_metadata_error("invalid-refresh-token"), 401
+            return wrap_with_metadata_error("Invalid refresh token"), 401
         access_token = create_access_token(
             identity=identity, 
-            additional_claims={"role": user['role']}
+            additional_claims={"role": user.roles}
         )
         return wrap_with_metadata({
             "access_token": access_token
         }), 201
         
+@ns_auth.route('/register')
+class Register(Resource):
+    @ns_auth.expect(register_model)
+    def post(self):
+        data = ns_auth.payload
+        if AuthAccount.objects(username=data['username']).first():
+            ns_auth.abort(400, "Username already exists")
+        
+        new_auth = AuthAccount(
+            username=data['username'],
+            password=generate_password_hash(data['password'])
+        )
+        
+        if len(data['roles']):
+            new_auth.roles = data['roles']
+        new_auth.save()
+
+        new_user = User(
+            auth_account=new_auth,
+            name=data['name'],
+            username=data['username']
+        ).save()
+
+        return wrap_with_metadata_v2(new_user, user_model), 201
