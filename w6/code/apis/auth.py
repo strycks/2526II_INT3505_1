@@ -18,7 +18,7 @@ register_model = ns_auth.model('Register', {
     'username': fields.String(required=True),
     'password': fields.String(required=True),
     'name': fields.String(required=True),
-    'roles': fields.List(fields.String())
+    'role': fields.String()
 })
 
 @ns_auth.route('/login')
@@ -38,7 +38,7 @@ class Login(Resource):
 
         access_token = create_access_token(
             identity=username, 
-            additional_claims={"role":usr.roles}, 
+            additional_claims={"role":usr.role}, 
             expires_delta=timedelta(minutes=15)
         )
         refresh_token = create_refresh_token(
@@ -61,7 +61,7 @@ class Refresh(Resource):
             return wrap_with_metadata_error("Invalid refresh token"), 401
         access_token = create_access_token(
             identity=identity, 
-            additional_claims={"role": user.roles}
+            additional_claims={"role": user.role}
         )
         return wrap_with_metadata({
             "access_token": access_token
@@ -71,6 +71,7 @@ class Refresh(Resource):
 class Register(Resource):
     @ns_auth.expect(register_model)
     def post(self):
+        """Register an user"""
         data = ns_auth.payload
         if AuthAccount.objects(username=data['username']).first():
             ns_auth.abort(400, "Username already exists")
@@ -80,8 +81,8 @@ class Register(Resource):
             password=generate_password_hash(data['password'])
         )
         
-        if len(data['roles']):
-            new_auth.roles = data['roles']
+        if data['role']:
+            new_auth.role = data['role']
         new_auth.save()
 
         new_user = User(

@@ -27,7 +27,7 @@ class Borrowing(Document):
 class AuthAccount(Document):
     username = StringField(required=True)
     password = StringField(required=True)
-    roles = ListField(StringField())
+    role = StringField()
     meta = {
         'collection': 'auth_accounts',
         'indexes': ['username']
