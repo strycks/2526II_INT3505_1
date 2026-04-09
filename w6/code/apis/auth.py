@@ -3,7 +3,6 @@ from flask_restx import Namespace, fields, Resource
 from utils import wrap_with_metadata, wrap_with_metadata_error, wrap_with_metadata_v2
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from database import auths_db
 from datetime import timedelta
 from models import AuthAccount, User
 from apis.users import user_model
