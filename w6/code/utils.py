@@ -1,8 +1,7 @@
 from datetime import datetime
-from flask_restx import reqparse
+from flask_restx import marshal, reqparse
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from functools import wraps
-import base64
 
 def wrap_with_metadata(data, pagination = None):
     response = {
@@ -22,8 +21,21 @@ def wrap_with_metadata_error(error):
             "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
-        "error": error
+        "message": error
     }
+
+def wrap_with_metadata_v2(data, model = None, pagination = None):
+    new_data = marshal(data, model) if model else data
+    response = {
+        "metadata": {
+            "apiVersion": "1.0",
+            "timestamp": datetime.now().isoformat()
+        },
+        "data": new_data
+    }
+    if pagination:
+       response["metadata"]["pagination"] = pagination 
+    return response
 
 def role_required(roles):
     if isinstance(roles, str):
@@ -37,7 +49,7 @@ def role_required(roles):
             if claims["role"] in roles:
                 return fn(*args, **kwargs)
             else:
-                return wrap_with_metadata_error("forbidden"), 403
+                return wrap_with_metadata_error("Forbidden"), 403
 
         return decorator
 
@@ -49,5 +61,5 @@ pagination_parser.add_argument('per_page', type=int, default=10, help='Item per 
 pagination_parser.add_argument('q', type=str, help='Search query')
 
 cursor_pagination_parser = reqparse.RequestParser()
-cursor_pagination_parser.add_argument('after', type=int, default=1, help='After index')
+cursor_pagination_parser.add_argument('after', type=str, help='After index')
 cursor_pagination_parser.add_argument('limit', type=int, default=10, help='Item limit')
