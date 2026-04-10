@@ -1,0 +1,243 @@
+openapi: 3.0.0
+info:
+  description: Simple API to manage library books.
+  title: Book Management API
+  version: ""
+servers:
+- url: https://soa.strycks.dpdns.org
+tags:
+- name: Books
+paths:
+  /api/v1/books:
+    get:
+      description: ""
+      operationId: list_all_books
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                  - title: Dota Dragon's Blood
+                    author: "valve, icefrog"
+                    year: 2026
+                    id: 1
+              schema:
+                items: {}
+                type: array
+          description: OK
+      summary: List All Books
+      tags:
+      - Books
+      x-openapi-router-controller: openapi_server.controllers.books_controller
+    post:
+      description: ""
+      operationId: create_book
+      requestBody:
+        $ref: "#/components/requestBodies/Create_BookBody"
+      responses:
+        "201":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    title: Dota Dragon's Blood
+                    author: "valve, icefrog"
+                    year: 2026
+                    id: 1
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: Created
+      summary: Create Book
+      tags:
+      - Books
+      x-openapi-router-controller: openapi_server.controllers.books_controller
+  /api/v1/books/{id}:
+    delete:
+      description: ""
+      operationId: delete_book
+      parameters:
+      - description: Book ID
+        example: "1"
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: number
+        style: simple
+      responses:
+        "204":
+          description: No Content
+      summary: Delete Book
+      tags:
+      - Books
+      x-openapi-router-controller: openapi_server.controllers.books_controller
+    get:
+      description: ""
+      operationId: get_book
+      parameters:
+      - description: Book ID
+        example: "1"
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: number
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    title: Dota Dragon's Blood
+                    author: "valve, icefrog"
+                    year: 2026
+                    id: 1
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: OK
+      summary: Get Book
+      tags:
+      - Books
+      x-openapi-router-controller: openapi_server.controllers.books_controller
+    patch:
+      description: ""
+      operationId: partial_update
+      parameters:
+      - description: Book ID
+        example: "1"
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: number
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Partial_Update_request"
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    title: Dota Dragon's Blood
+                    author: "valve, icefrog"
+                    year: 2026
+                    id: 1
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: OK
+      summary: Partial Update
+      tags:
+      - Books
+      x-openapi-router-controller: openapi_server.controllers.books_controller
+    put:
+      description: ""
+      operationId: replace_book
+      parameters:
+      - description: Book ID
+        example: "1"
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: number
+        style: simple
+      requestBody:
+        $ref: "#/components/requestBodies/Create_BookBody"
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                response:
+                  value:
+                    title: Dota Dragon's Blood
+                    author: "valve, icefrog"
+                    year: 2026
+                    id: 1
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: OK
+      summary: Replace Book
+      tags:
+      - Books
+      x-openapi-router-controller: openapi_server.controllers.books_controller
+components:
+  requestBodies:
+    Create_BookBody:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Create_Book_request"
+  schemas:
+    BookBase:
+      properties:
+        title:
+          example: Dota Dragon's Blood
+          title: title
+          type: string
+        author:
+          example: "valve, icefrog"
+          title: author
+          type: string
+        year:
+          example: 2026
+          title: year
+          type: number
+      required:
+      - title
+      title: BookBase
+      type: object
+    Book:
+      allOf:
+      - $ref: "#/components/schemas/BookBase"
+      - properties:
+          id:
+            example: 1
+            type: number
+        type: object
+      example:
+        year: 2026
+        author: "valve, icefrog"
+        id: 1
+        title: Dota Dragon's Blood
+      title: Book
+    Books_Collection: {}
+    Book_Details: {}
+    Create_Book_request:
+      example:
+        title: Dota Dragon's Blood
+        author: "valve, icefrog"
+        year: 2026
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        year:
+          type: number
+      required:
+      - title
+      title: Create_Book_request
+      type: object
+    Partial_Update_request:
+      example:
+        year: 2027
+      properties:
+        year:
+          type: number
+      title: Partial_Update_request
+      type: object
