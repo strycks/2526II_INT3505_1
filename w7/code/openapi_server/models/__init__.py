@@ -1,6 +1,6 @@
 # flake8: noqa
 # import models into model package
+from openapi_server.models.book import Book
 from openapi_server.models.book_request import BookRequest
-from openapi_server.models.borrowing_request import BorrowingRequest
-from openapi_server.models.login import Login
-from openapi_server.models.register import Register
+from openapi_server.models.login_request import LoginRequest
+from openapi_server.models.login_response import LoginResponse

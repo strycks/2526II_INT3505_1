@@ -1,98 +1,46 @@
-openapi: 3.0.1
+openapi: 3.0.0
 info:
-  title: Book Management API
-  version: "1.0"
+  description: "A clean, direct API for library management designed for Session 7.\
+    \ No metadata wrapping."
+  title: Simplified Library Management API
+  version: 1.0.0
 servers:
-- url: /
-security:
-- bearerAuth: []
-tags:
-- description: Authorization
-  name: api/v1/auth
-- description: Book Management
-  name: api/v1/books
-- description: User Management
-  name: api/v1/users
+- url: http://localhost:8080/api/v1
 paths:
-  /api/v1/auth/login:
+  /auth/login:
     post:
-      operationId: post_login
+      operationId: openapi_server_controllers_auth_controller_login
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Login"
+              $ref: "#/components/schemas/LoginRequest"
         required: true
       responses:
         "200":
-          content: {}
-          description: Success
-      security: []
-      summary: Login to get JWT Token
-      tags:
-      - api/v1/auth
-      x-codegen-request-body-name: payload
-      x-openapi-router-controller: openapi_server.controllers.api_v1_auth_controller
-  /api/v1/auth/refresh:
-    post:
-      operationId: post_refresh
-      responses:
-        "200":
-          content: {}
-          description: Success
-      summary: Refresh token
-      tags:
-      - api/v1/auth
-      x-openapi-router-controller: openapi_server.controllers.api_v1_auth_controller
-  /api/v1/auth/register:
-    post:
-      operationId: post_register
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Register"
-        required: true
-      responses:
-        "200":
-          content: {}
-          description: Success
-      summary: Register an user
-      tags:
-      - api/v1/auth
-      x-codegen-request-body-name: payload
-      x-openapi-router-controller: openapi_server.controllers.api_v1_auth_controller
-  /api/v1/books:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+          description: Successfully authenticated
+      summary: User Login
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /books:
     get:
-      operationId: get_book_list
-      parameters:
-      - description: Page number
-        in: query
-        name: page
-        schema:
-          default: 1
-          type: integer
-      - description: Item per page
-        in: query
-        name: per_page
-        schema:
-          default: 10
-          type: integer
-      - description: Search query
-        in: query
-        name: q
-        schema:
-          type: string
+      operationId: openapi_server_controllers_book_controller_get_books
       responses:
         "200":
-          content: {}
-          description: Success
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Book"
+                type: array
+          description: A list of books
       summary: Get all books
-      tags:
-      - api/v1/books
-      x-openapi-router-controller: openapi_server.controllers.api_v1_books_controller
+      x-openapi-router-controller: openapi_server.controllers.default_controller
     post:
-      operationId: post_book_list
+      operationId: openapi_server_controllers_book_controller_create_book
       requestBody:
         content:
           application/json:
@@ -101,167 +49,120 @@ paths:
         required: true
       responses:
         "201":
-          content: {}
-          description: Created
-        "400":
-          content: {}
-          description: Bad Request
-      summary: Add new book
-      tags:
-      - api/v1/books
-      x-codegen-request-body-name: payload
-      x-openapi-router-controller: openapi_server.controllers.api_v1_books_controller
-  /api/v1/books/{book_id}:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: Book created successfully
+      security:
+      - bearerAuth: []
+      summary: Add a new book
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /books/{book_id}:
     delete:
-      operationId: delete_book_item
+      operationId: openapi_server_controllers_book_controller_delete_book
       parameters:
-      - in: path
+      - explode: false
+        in: path
         name: book_id
         required: true
         schema:
           type: string
+        style: simple
       responses:
         "204":
-          content: {}
-          description: Deleted
-      summary: Delete a specific book
-      tags:
-      - api/v1/books
-      x-openapi-router-controller: openapi_server.controllers.api_v1_books_controller
+          description: Book deleted successfully
+      security:
+      - bearerAuth: []
+      summary: Remove a book
+      x-openapi-router-controller: openapi_server.controllers.default_controller
     get:
-      operationId: get_book_item
+      operationId: openapi_server_controllers_book_controller_get_book_by_id
       parameters:
-      - in: path
+      - explode: false
+        in: path
         name: book_id
         required: true
         schema:
           type: string
+        style: simple
       responses:
         "200":
-          content: {}
-          description: Success
-      summary: Get a specific book
-      tags:
-      - api/v1/books
-      x-openapi-router-controller: openapi_server.controllers.api_v1_books_controller
-  /api/v1/users:
-    get:
-      operationId: get_user_list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: Book found
+        "404":
+          description: Book not found
+      summary: Get book details
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    put:
+      operationId: openapi_server_controllers_book_controller_update_book
       parameters:
-      - description: After index
-        in: query
-        name: after
-        schema:
-          type: string
-      - description: Item limit
-        in: query
-        name: limit
-        schema:
-          default: 10
-          type: integer
-      responses:
-        "200":
-          content: {}
-          description: Success
-      summary: Get all users
-      tags:
-      - api/v1/users
-      x-openapi-router-controller: openapi_server.controllers.api_v1_users_controller
-  /api/v1/users/{user_id}:
-    get:
-      operationId: get_user_entry
-      parameters:
-      - in: path
-        name: user_id
+      - explode: false
+        in: path
+        name: book_id
         required: true
         schema:
           type: string
-      responses:
-        "200":
-          content: {}
-          description: Success
-      summary: Get a specific user
-      tags:
-      - api/v1/users
-      x-openapi-router-controller: openapi_server.controllers.api_v1_users_controller
-  /api/v1/users/{user_id}/borrowings:
-    get:
-      operationId: get_user_borrows
-      parameters:
-      - in: path
-        name: user_id
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          content: {}
-          description: Success
-      summary: View list of borrowed books
-      tags:
-      - api/v1/users
-      x-openapi-router-controller: openapi_server.controllers.api_v1_users_controller
-    post:
-      operationId: post_user_borrows
-      parameters:
-      - in: path
-        name: user_id
-        required: true
-        schema:
-          type: string
+        style: simple
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BorrowingRequest"
+              $ref: "#/components/schemas/BookRequest"
         required: true
       responses:
         "200":
-          content: {}
-          description: Success
-      summary: Borrow a book
-      tags:
-      - api/v1/users
-      x-codegen-request-body-name: payload
-      x-openapi-router-controller: openapi_server.controllers.api_v1_users_controller
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+          description: Book updated successfully
+      security:
+      - bearerAuth: []
+      summary: Update a book
+      x-openapi-router-controller: openapi_server.controllers.default_controller
 components:
-  responses:
-    ParseError:
-      content: {}
-      description: When a mask can't be parsed
-    MaskError:
-      content: {}
-      description: When any error occurs on mask
-    DoesNotExist:
-      content: {}
-      description: When resource doesn't exist
-    ValidationError:
-      content: {}
-      description: When resource format isn't correct
   schemas:
-    Login:
+    BookRequest:
       example:
-        password: "123456"
-        username: admin
+        quantity: 0
+        author: author
+        title: title
       properties:
-        username:
-          default: admin
-          title: username
+        title:
+          title: title
           type: string
-        password:
-          default: "123456"
-          title: password
+        author:
+          title: author
           type: string
+        quantity:
+          default: 1
+          title: quantity
+          type: integer
       required:
-      - password
-      - username
-      title: Login
+      - title
+      title: BookRequest
       type: object
-    Register:
+    Book:
+      allOf:
+      - $ref: "#/components/schemas/BookRequest"
+      - properties:
+          id:
+            example: 65f1a2b3c4d5e6f7g8h9i0
+            type: string
+        type: object
+      example:
+        quantity: 0
+        author: author
+        id: 65f1a2b3c4d5e6f7g8h9i0
+        title: title
+      title: Book
+    LoginRequest:
       example:
         password: password
-        role: role
-        name: name
         username: username
       properties:
         username:
@@ -270,53 +171,27 @@ components:
         password:
           title: password
           type: string
-        name:
-          title: name
-          type: string
-        role:
-          title: role
-          type: string
       required:
-      - name
       - password
       - username
-      title: Register
+      title: LoginRequest
       type: object
-    BookRequest:
+    LoginResponse:
       example:
-        year: 0
-        author: "valve, icefrog"
-        title: title
+        access_token: access_token
+        refresh_token: refresh_token
       properties:
-        title:
-          title: title
+        access_token:
+          title: access_token
           type: string
-        author:
-          default: "valve, icefrog"
-          title: author
+        refresh_token:
+          title: refresh_token
           type: string
-        year:
-          title: year
-          type: integer
-      required:
-      - title
-      title: BookRequest
-      type: object
-    BorrowingRequest:
-      example:
-        book_id: book_id
-      properties:
-        book_id:
-          title: book_id
-          type: string
-      required:
-      - book_id
-      title: BorrowingRequest
+      title: LoginResponse
       type: object
   securitySchemes:
     bearerAuth:
-      in: header
-      name: Authorization
-      type: apiKey
-      x-apikeyInfoFunc: openapi_server.controllers.security_controller.info_from_bearerAuth
-x-original-swagger-version: "2.0"
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+      x-bearerInfoFunc: openapi_server.controllers.security_controller.info_from_bearerAuth
