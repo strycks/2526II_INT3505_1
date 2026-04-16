@@ -1,0 +1,244 @@
+swagger: "2.0"
+basePath: /
+paths:
+  /api/v1/auth/login:
+    post:
+      responses:
+        "200":
+          description: Success
+      summary: Login to get JWT Token
+      operationId: post_login
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: "#/definitions/Login"
+      security: []
+      tags:
+        - api/v1/auth
+  /api/v1/auth/refresh:
+    post:
+      responses:
+        "200":
+          description: Success
+      summary: Refresh token
+      operationId: post_refresh
+      tags:
+        - api/v1/auth
+  /api/v1/auth/register:
+    post:
+      responses:
+        "200":
+          description: Success
+      summary: Register an user
+      operationId: post_register
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: "#/definitions/Register"
+      tags:
+        - api/v1/auth
+  /api/v1/books:
+    get:
+      responses:
+        "200":
+          description: Success
+      summary: Get all books
+      operationId: get_book_list
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          description: Page number
+          default: 1
+        - name: per_page
+          in: query
+          type: integer
+          description: Item per page
+          default: 10
+        - name: q
+          in: query
+          type: string
+          description: Search query
+      tags:
+        - api/v1/books
+    post:
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+      summary: Add new book
+      operationId: post_book_list
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: "#/definitions/BookRequest"
+      tags:
+        - api/v1/books
+  /api/v1/books/{book_id}:
+    parameters:
+      - name: book_id
+        in: path
+        required: true
+        type: string
+    delete:
+      responses:
+        "204":
+          description: Deleted
+      summary: Delete a specific book
+      operationId: delete_book_item
+      tags:
+        - api/v1/books
+    get:
+      responses:
+        "200":
+          description: Success
+      summary: Get a specific book
+      operationId: get_book_item
+      tags:
+        - api/v1/books
+  /api/v1/users:
+    get:
+      responses:
+        "200":
+          description: Success
+      summary: Get all users
+      operationId: get_user_list
+      parameters:
+        - name: after
+          in: query
+          type: string
+          description: After index
+        - name: limit
+          in: query
+          type: integer
+          description: Item limit
+          default: 10
+      tags:
+        - api/v1/users
+  /api/v1/users/{user_id}:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        type: string
+    get:
+      responses:
+        "200":
+          description: Success
+      summary: Get a specific user
+      operationId: get_user_entry
+      tags:
+        - api/v1/users
+  /api/v1/users/{user_id}/borrowings:
+    parameters:
+      - name: user_id
+        in: path
+        required: true
+        type: string
+    get:
+      responses:
+        "200":
+          description: Success
+      summary: View list of borrowed books
+      operationId: get_user_borrows
+      tags:
+        - api/v1/users
+    post:
+      responses:
+        "200":
+          description: Success
+      summary: Borrow a book
+      operationId: post_user_borrows
+      parameters:
+        - name: payload
+          required: true
+          in: body
+          schema:
+            $ref: "#/definitions/BorrowingRequest"
+      tags:
+        - api/v1/users
+info:
+  title: Book Management API
+  version: "1.0"
+produces:
+  - application/json
+consumes:
+  - application/json
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    in: header
+    name: Authorization
+security:
+  - bearerAuth: []
+tags:
+  - name: api/v1/auth
+    description: Authorization
+  - name: api/v1/books
+    description: Book Management
+  - name: api/v1/users
+    description: User Management
+definitions:
+  Login:
+    required:
+      - password
+      - username
+    properties:
+      username:
+        type: string
+        default: admin
+      password:
+        type: string
+        default: "123456"
+    type: object
+  Register:
+    required:
+      - name
+      - password
+      - username
+    properties:
+      username:
+        type: string
+      password:
+        type: string
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+  BookRequest:
+    required:
+      - title
+    properties:
+      title:
+        type: string
+      author:
+        type: string
+        default: valve, icefrog
+      year:
+        type: integer
+        default: 2026
+    type: object
+  BorrowingRequest:
+    required:
+      - book_id
+    properties:
+      book_id:
+        type: string
+    type: object
+responses:
+  ParseError:
+    description: When a mask can't be parsed
+  MaskError:
+    description: When any error occurs on mask
+  DoesNotExist: 
+    description: When resource doesn't exist
+  ValidationError: 
+    description: When resource format isn't correct
