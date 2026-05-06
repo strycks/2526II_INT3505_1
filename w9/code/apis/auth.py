@@ -7,7 +7,7 @@ from datetime import timedelta
 from models import AuthAccount, User
 from apis.users import user_model
 
-ns_auth = Namespace('api/v1/auth', description='Authorization')
+ns_auth = Namespace('auth', description='Authorization')
 
 login_model = ns_auth.model('Login', {
     'username': fields.String(required=True, default='admin'),

@@ -6,7 +6,6 @@ from functools import wraps
 def wrap_with_metadata(data, pagination = None):
     response = {
         "metadata": {
-            "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
         "data": data
@@ -18,7 +17,6 @@ def wrap_with_metadata(data, pagination = None):
 def wrap_with_metadata_error(error):
     return {
         "metadata": {
-            "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
         "message": error
@@ -28,7 +26,6 @@ def wrap_with_metadata_v2(data, model = None, pagination = None):
     new_data = marshal(data, model) if model else data
     response = {
         "metadata": {
-            "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
         "data": new_data

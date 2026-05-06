@@ -4,7 +4,7 @@ from flask_restx import Resource, fields, Namespace
 from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required, wrap_with_metadata_v2
 from models import Book
 
-ns_books = Namespace('api/v1/books', description='Book Management')
+ns_books = Namespace('books', description='Book Management')
 
 book_model = ns_books.model('Book', {
     'id': fields.String(required=True),
@@ -17,6 +17,11 @@ book_request_model = ns_books.model('BookRequest', {
     'title': fields.String(required=True),
     'author': fields.String(default="valve, icefrog"),
     'year': fields.Integer(default=2026)
+})
+
+book_simple_model = ns_books.model('BookSimple', {
+    'id': fields.String(required=True),
+    'title': fields.String(required=True),
 })
 
 @ns_books.route('')
@@ -53,7 +58,7 @@ class BookList(Resource):
                 "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != None else "") if page > 1 else None
             }
         }
-        return wrap_with_metadata_v2(list(items), book_model, pagination)
+        return wrap_with_metadata_v2(list(items), book_simple_model, pagination)
 
     @role_required("admin")
     @jwt_required()
