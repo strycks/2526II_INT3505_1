@@ -1,4 +1,5 @@
 from datetime import datetime
+from flask import make_response
 from flask_restx import marshal, reqparse
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from functools import wraps
@@ -33,6 +34,18 @@ def wrap_with_metadata_v2(data, model = None, pagination = None):
     if pagination:
        response["metadata"]["pagination"] = pagination 
     return response
+
+def deprecated_warning(sunset_date, v2_url):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            response = make_response(f(*args, **kwargs))
+            response.headers['Deprecation'] = 'true'
+            response.headers['Sunset'] = sunset_date
+            response.headers['Link'] = f'<{v2_url}>; rel="alternate"'
+            return response
+        return decorated_function
+    return decorator
 
 def role_required(roles):
     if isinstance(roles, str):

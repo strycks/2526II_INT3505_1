@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restx import Resource, fields, Namespace
 from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required, wrap_with_metadata_v2
 from models import Book
+from utils import deprecated_warning
 
 ns_books = Namespace('books', description='Book Management')
 
@@ -23,6 +24,8 @@ book_request_model = ns_books.model('BookRequest', {
 class BookList(Resource):
     @jwt_required()
     # @ns_books.expect(pagination_parser, validate=True)
+    @deprecated_warning("31-12-2026", "/api/v2/books")
+    @ns_books.doc(deprecated=True)
     def get(self):
         """Get all books"""
         # args = pagination_parser.parse_args()
