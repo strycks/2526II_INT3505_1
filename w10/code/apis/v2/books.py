@@ -3,7 +3,6 @@ from flask_jwt_extended import jwt_required
 from flask_restx import Resource, fields, Namespace
 from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required, wrap_with_metadata_v2
 from models import Book
-from utils import deprecated_warning
 
 ns_books = Namespace('books', description='Book Management')
 
@@ -20,15 +19,46 @@ book_request_model = ns_books.model('BookRequest', {
     'year': fields.Integer(default=2026)
 })
 
+book_simple_model = ns_books.model('BookSimple', {
+    'id': fields.String(required=True),
+    'title': fields.String(required=True),
+})
+
 @ns_books.route('')
 class BookList(Resource):
     @jwt_required()
-    @deprecated_warning("31-12-2026", "/api/v2/books")
-    @ns_books.doc(deprecated=True)
+    @ns_books.expect(pagination_parser, validate=True)
     def get(self):
         """Get all books"""
-        items = Book.objects.all()
-        return wrap_with_metadata_v2(list(items), book_model)
+        args = pagination_parser.parse_args()
+        page = args['page']
+        per_page = args['per_page']
+        query = args.get('q')
+        
+        filtered_books = Book.objects.all() if not query else Book.objects(title__icontains=query)
+        total_elements = len(filtered_books)
+
+        # page = ceil(ele / per)
+        total_pages = (total_elements + per_page - 1) // per_page if total_elements > 0 else 0
+        if page > total_pages and total_pages > 0:
+            page = total_pages
+        
+        start = (page - 1) * per_page
+        end = min(start + per_page, total_elements)
+        items = filtered_books[start:end]
+
+        pagination = {
+            "type": "page-based",
+            "current_page": page,
+            "per_page": per_page,
+            "total_elements": total_elements,
+            "total_pages": total_pages,
+            "links": {
+                "next": f"?page={page+1}&per_page={per_page}" + (f"&q={query}" if query != None else "") if page < total_pages else None,
+                "prev": f"?page={page-1}&per_page={per_page}" + (f"&q={query}" if query != None else "") if page > 1 else None
+            }
+        }
+        return wrap_with_metadata_v2(list(items), book_simple_model, pagination)
 
     @role_required("admin")
     @jwt_required()
