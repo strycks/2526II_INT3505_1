@@ -6,6 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
 from models import AuthAccount, User
 from apis.users import user_model
+from limiter import limiter
 
 ns_auth = Namespace('api/v1/auth', description='Authorization')
 
@@ -23,6 +24,7 @@ register_model = ns_auth.model('Register', {
 
 @ns_auth.route('/login')
 class Login(Resource):
+    @limiter.limit("10 per minute")
     @ns_auth.expect(login_model)
     @ns_auth.doc(security=[])
     def post(self):
@@ -52,6 +54,7 @@ class Login(Resource):
         
 @ns_auth.route('/refresh')
 class Refresh(Resource):
+    @limiter.limit("20 per hour")
     @jwt_required(refresh=True)
     def post(self):
         """Refresh token"""
@@ -69,6 +72,7 @@ class Refresh(Resource):
         
 @ns_auth.route('/register')
 class Register(Resource):
+    @limiter.limit("5 per hour")
     @ns_auth.expect(register_model)
     def post(self):
         """Register an user"""

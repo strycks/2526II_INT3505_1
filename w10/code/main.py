@@ -1,5 +1,7 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from mongoengine import connect, disconnect
 from apis import api
 import os
@@ -7,6 +9,7 @@ import logging
 from dotenv import load_dotenv
 from prometheus_flask_exporter import PrometheusMetrics
 import monitoring
+from limiter import limiter
 
 load_dotenv()
 
@@ -23,6 +26,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# Initialize rate limiter
+limiter.init_app(app)
 
 metrics = PrometheusMetrics(app=app, path=None)
 monitoring.init_app(app)

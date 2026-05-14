@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restx import Resource, fields, Namespace
 from utils import wrap_with_metadata, wrap_with_metadata_error, pagination_parser, role_required, wrap_with_metadata_v2
 from models import Book
+from limiter import limiter
 
 ns_books = Namespace('api/v1/books', description='Book Management')
 
@@ -21,6 +22,7 @@ book_request_model = ns_books.model('BookRequest', {
 
 @ns_books.route('')
 class BookList(Resource):
+    @limiter.limit("100 per hour")
     @jwt_required()
     @ns_books.expect(pagination_parser, validate=True)
     def get(self):
@@ -55,6 +57,7 @@ class BookList(Resource):
         }
         return wrap_with_metadata_v2(list(items), book_model, pagination)
 
+    @limiter.limit("20 per hour")
     @role_required("admin")
     @jwt_required()
     @ns_books.expect(book_request_model, validate=True)
@@ -71,6 +74,7 @@ class BookList(Resource):
 
 @ns_books.route('/<string:book_id>')
 class BookItem(Resource):
+    @limiter.limit("50 per hour")
     @jwt_required()
     def get(self, book_id):
         """Get a specific book"""
@@ -78,6 +82,7 @@ class BookItem(Resource):
         
         return wrap_with_metadata_v2(book, book_model), 200
     
+    @limiter.limit("10 per hour")
     @jwt_required()
     @ns_books.response(204, "Deleted")
     def delete(self, book_id):

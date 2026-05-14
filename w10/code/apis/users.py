@@ -4,6 +4,7 @@ from flask_restx import Namespace, fields, Resource
 from utils import cursor_pagination_parser, wrap_with_metadata_v2, role_required
 from models import User, Book, Borrowing, AuthAccount
 from apis.books import book_model
+from limiter import limiter
 
 ns_users = Namespace('api/v1/users', description='User Management')
 
@@ -23,6 +24,7 @@ borrowing_request_model = ns_users.model('BorrowingRequest', {
 
 @ns_users.route('')
 class UserList(Resource):
+    @limiter.limit("50 per hour")
     @jwt_required()
     @ns_users.expect(cursor_pagination_parser)
     def get(self):
@@ -43,6 +45,7 @@ class UserList(Resource):
     
 @ns_users.route('/<string:user_id>')
 class UserEntry(Resource):
+    @limiter.limit("20 per hour")
     @jwt_required()
     def get(self, user_id):
         """Get a specific user"""
@@ -52,12 +55,14 @@ class UserEntry(Resource):
 
 @ns_users.route('/<string:user_id>/borrowings')
 class UserBorrows(Resource):
+    @limiter.limit("30 per hour")
     @jwt_required()
     def get(self, user_id):
         """View list of borrowed books"""
         items = Borrowing.objects(user = user_id).select_related()
         return wrap_with_metadata_v2(list(items), borrowing_model), 200
 
+    @limiter.limit("10 per hour")
     @jwt_required()
     @ns_users.expect(borrowing_request_model)
     def post(self, user_id):
