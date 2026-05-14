@@ -1,4 +1,13 @@
 services:
+  # soa-app:
+  #   image: strycks/soa-app:latest
+  #   container_name: soa-app
+  #   ports:
+  #     - "5000:5000"
+  #   environment:
+  #     - MONGODB_URI=${MONGODB_URI}
+  #     - FLASK_ENV=${FLASK_ENV}
+
   prometheus:
     image: prom/prometheus:latest
     container_name: soa-prometheus
@@ -9,6 +18,8 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
       - "9090:9090"
+    networks:
+      - monitoring
 
   grafana:
     image: grafana/grafana-oss:latest
@@ -17,7 +28,15 @@ services:
       - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
 
 volumes:
   prometheus-data:
   grafana-data:
+
+networks:
+  monitoring:
+    driver: bridge

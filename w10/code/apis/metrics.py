@@ -8,7 +8,7 @@ ns_metrics = Namespace('metrics')
 @ns_metrics.route('')
 @ns_metrics.doc(security=[])
 class Metrics(Resource):
-    @limiter.limit("100 per hour")
+    @limiter.limit("5 per minute")
     def get(self):
         """Expose Prometheus metrics for scraping."""
         return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
