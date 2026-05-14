@@ -82,12 +82,13 @@ class BookItem(Resource):
         
         return wrap_with_metadata_v2(book, book_model), 200
     
-    @limiter.limit("10 per hour")
+    @limiter.limit("20 per hour")
     @jwt_required()
     @ns_books.response(204, "Deleted")
     def delete(self, book_id):
         """Delete a specific book"""
-        book = Book.objects.get(id=book_id)
-        book.delete()
+        book = Book.objects(id=book_id)
+        if book:
+            book[0].delete()
         
         return wrap_with_metadata(""), 204
