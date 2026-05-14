@@ -1,5 +1,4 @@
 from datetime import datetime
-from flask import make_response
 from flask_restx import marshal, reqparse
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 from functools import wraps
@@ -7,6 +6,7 @@ from functools import wraps
 def wrap_with_metadata(data, pagination = None):
     response = {
         "metadata": {
+            "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
         "data": data
@@ -18,6 +18,7 @@ def wrap_with_metadata(data, pagination = None):
 def wrap_with_metadata_error(error):
     return {
         "metadata": {
+            "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
         "message": error
@@ -27,6 +28,7 @@ def wrap_with_metadata_v2(data, model = None, pagination = None):
     new_data = marshal(data, model) if model else data
     response = {
         "metadata": {
+            "apiVersion": "1.0",
             "timestamp": datetime.now().isoformat()
         },
         "data": new_data
@@ -34,18 +36,6 @@ def wrap_with_metadata_v2(data, model = None, pagination = None):
     if pagination:
        response["metadata"]["pagination"] = pagination 
     return response
-
-def deprecated_warning(sunset_date, v2_url):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            response = make_response(f(*args, **kwargs))
-            response.headers['Deprecation'] = 'true'
-            response.headers['Sunset'] = sunset_date
-            response.headers['Link'] = f'<{v2_url}>; rel="alternate"'
-            return response
-        return decorated_function
-    return decorator
 
 def role_required(roles):
     if isinstance(roles, str):
