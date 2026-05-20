@@ -1,12 +1,20 @@
 services:
-  # soa-app:
-  #   image: strycks/soa-app:latest
-  #   container_name: soa-app
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - MONGODB_URI=${MONGODB_URI}
-  #     - FLASK_ENV=${FLASK_ENV}
+  soa-app:
+    image: strycks/soa-app:amd64-latest
+    container_name: soa-app
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - FLASK_ENV=${FLASK_ENV}
+      - LOKI_URL=http://loki:3100/loki/api/v1/push
+      - ENVIRONMENT=development
+      - LOKI_APP_NAME=soa-app
+      - LOKI_SERVICE=soa-api
+    depends_on:
+      - loki
+    networks:
+      - monitoring
 
   prometheus:
     image: prom/prometheus:latest
@@ -30,12 +38,26 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
+      - loki
+    networks:
+      - monitoring
+
+  loki:
+    image: grafana/loki:2.8.4
+    container_name: soa-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+      - loki-data:/tmp/loki
     networks:
       - monitoring
 
 volumes:
   prometheus-data:
   grafana-data:
+  loki-data:
 
 networks:
   monitoring:
