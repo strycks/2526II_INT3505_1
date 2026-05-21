@@ -26,23 +26,34 @@ def find_book(book_id):
     return next((b for b in books if b["id"] == book_id), None)
 
 
+VALID_SORT_FIELDS = {"title", "author", "year", "genre", "id"}
+
+
 @app.route("/books", methods=["GET"])
 @swag_from({
     "tags": ["Books"],
-    "summary": "List all books with optional filtering & search",
+    "summary": "List all books with filtering, search, sorting & pagination",
     "parameters": [
         {"name": "q", "in": "query", "type": "string", "description": "Search title/author"},
         {"name": "author", "in": "query", "type": "string", "description": "Filter by author (exact)"},
         {"name": "genre", "in": "query", "type": "string", "description": "Filter by genre (exact)"},
         {"name": "year", "in": "query", "type": "string", "description": "Filter by publication year"},
+        {"name": "sort_by", "in": "query", "type": "string", "description": "Sort field: title, author, year, genre, id"},
+        {"name": "order", "in": "query", "type": "string", "description": "Sort order: asc (default) or desc"},
+        {"name": "page", "in": "query", "type": "integer", "description": "Page number (default 1)"},
+        {"name": "per_page", "in": "query", "type": "integer", "description": "Items per page (default 10, 0 = all)"},
     ],
-    "responses": {"200": {"description": "A list of books"}},
+    "responses": {"200": {"description": "Paginated list of books with metadata"}},
 })
 def get_books():
     q = request.args.get("q", "").lower()
     author = request.args.get("author", "").lower()
     genre = request.args.get("genre", "").lower()
     year = request.args.get("year")
+    sort_by = request.args.get("sort_by", "id")
+    order = request.args.get("order", "asc").lower()
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
 
     result = books
     if q:
@@ -54,7 +65,29 @@ def get_books():
     if year:
         result = [b for b in result if str(b["year"]) == year]
 
-    return jsonify(result), 200
+    if sort_by in VALID_SORT_FIELDS:
+        reverse = order == "desc"
+        result = sorted(result, key=lambda b: (b.get(sort_by) is None, b.get(sort_by)), reverse=reverse)
+
+    total = len(result)
+
+    if per_page > 0:
+        total_pages = max(1, (total + per_page - 1) // per_page)
+        page = max(1, min(page, total_pages))
+        start = (page - 1) * per_page
+        end = start + per_page
+        result = result[start:end]
+    else:
+        total_pages = 1
+        page = 1
+
+    return jsonify({
+        "data": result,
+        "page": page,
+        "per_page": per_page if per_page > 0 else total,
+        "total": total,
+        "total_pages": total_pages,
+    }), 200
 
 
 @app.route("/books/<int:book_id>", methods=["GET"])
